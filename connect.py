@@ -39,6 +39,11 @@ class Connect(ConnectLogic, Game):
                 x = c*self.DISC_SIZE
                 y = r*self.DISC_SIZE
                 s = self.DISC_SIZE
+                self.drawField(x, y, s, f_color)
+        self.draw()
+
+
+    def drawField(self, x, y, s, color):
                 pygame.draw.rect(
                     self.getScreen(),
                     BLUE_COLOR,  
@@ -55,15 +60,15 @@ class Connect(ConnectLogic, Game):
                 )
                 pygame.draw.circle(
                     self.getScreen(),
-                    f_color,
+                    color,
                     (   
                         int(x + s/2),
                         int(y + s/2)
                     ), 
                     int(s/2 - 12)
                 )
-        self.draw()
-
+        
+        
 
     def getFieldColor(self, row, col):
         f = self.checkField(row, col)
@@ -80,5 +85,5 @@ class Connect(ConnectLogic, Game):
 
 
 if __name__ == "__main__":
-    g = Connect(b_row=7, b_col=7)
+    g = Connect(b_row=7, b_col=7, size=80)
     g.starGame()
