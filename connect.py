@@ -22,10 +22,10 @@ class Connect(ConnectLogic, Game):
                                            window_name="connect4", **kwarg) 
         self.init_pygame()
         self.DISC_SIZE = size
-        
-
-        print(self.game_board.getBoard()) 
         self.draw_board()
+        
+        #testing
+        print(self.game_board.getBoard()) 
         self.setField(0,0, 1)
         self.setField(5,6, 2)
         self.setField(6,6, 1)
