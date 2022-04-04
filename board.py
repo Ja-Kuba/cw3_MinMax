@@ -27,6 +27,7 @@ class Board:
     def copy(self):
         new_board = Board(self.rows, self.columns)
         new_board.board = self.board.copy()
+        return new_board
     
     def checkSize(self, rows, columns):
         if not ((rows >= 4 and columns >= 2) or (rows >= 4 and columns >= 2)):
@@ -62,7 +63,10 @@ class Board:
         elif c < 0 or c >= self.columns: return False
         else: return True
             
-        
+
+    def anyMovesLeft(self):
+        if (self.board[0] == 0).sum(): return True
+        else: return False
     
     def getAllValidMoves(self)->list:
         moves = []
@@ -76,13 +80,39 @@ class Board:
     
     def buildVectors(self, row, col):
         series = []
-        series.append(self.getSeriesVector(row,col, -1, 1))
+        series.append(self.getSeriesVector(row,col,-1, 1))
         series.append(self.getSeriesVector(row,col, 1, 1))
         series.append(self.getSeriesVector(row,col, 0, 1))
         series.append(self.getSeriesVector(row,col, 1, 0))
         
         return series
         
+    #not optimal 
+    #some break could be added if any series == 4
+    def findLongestSeries(self, row, col, r_dir, c_dir, **kwargs):
+        vec = self.getSeriesVector(row, col, r_dir, c_dir, **kwargs)
+        y_series = []
+        r_series = []
+        l = len(vec)
+        if l >= 4:
+            for i in range(l-3):
+                y_tmp, r_tmp = self.countSeries(vec[i:i+4])
+                if not r_tmp: y_series.append(y_tmp)
+                elif not y_tmp: r_series.append(r_tmp)
+        return (y_series, r_series)
+                 
+
+    
+    def countSeries(self, vec):
+        y_cnt = 0
+        r_cnt = 0
+        for v in vec:
+            if v == self.YELLOW_P:
+                y_cnt+=1
+            elif v == self.RED_P:
+                r_cnt+=1
+        return y_cnt, r_cnt
+
     
     # x_dir = [-1 | 0 | 1]
     # y_dir = [-1 | 0 | 1]
@@ -109,9 +139,10 @@ class Board:
     
     
     if __name__ == "__main__":    
-        a = np.array([[1,2,3],[4,5,6], [7,8,9]])
+        def a():
+            return (1, 1)
 
-        
+
         
     
         

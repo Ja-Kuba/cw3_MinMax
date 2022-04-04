@@ -10,7 +10,7 @@ class Game:
         self.__run = False
         self.window_name = window_name
         self.TICK_EVENT = pygame.USEREVENT + 1
-        self.TICK_TIME = 250
+        self.TICK_TIME = 150
 
     def init_pygame(self):
         pygame.init()
@@ -45,6 +45,8 @@ class Game:
     def handleEvent(self, event):
         if event.type == self.TICK_EVENT:
             self.onTick(event)
+        elif event.type == pygame.KEYUP:
+            self.onKeyUp(event)
         elif event.type == pygame.QUIT:
             self.onQuit(event)
         else:
@@ -52,6 +54,9 @@ class Game:
             
     ###game events
     def onTick(self, event):
+        pass
+
+    def onKeyUp(self, event):
         pass
     
     def onQuit(self, event):

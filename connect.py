@@ -73,18 +73,41 @@ class Connect(ConnectLogic, Game):
         else:
             raise ConnectError(f"Invalid field value: {f}")
 
+    
+    def getCurrentPlayer_name(self):
+        p = self.getCurrentPlayer()
+        if p == self.PLAYER_Y: return "YELLOW"
+        else: return "RED"
+
+
     def draw(self):
         super().draw()
-        
+
+    def checkResult(self, m_type):
+        if m_type == self.WINNER_MOVE:
+            self.play = False
+            print(f"winner: {self.getCurrentPlayer_name()}")
+        elif m_type == self.DRAW_MOVE:
+            self.play = False
+            print("game draw")
+        else: pass
+
           
     def onTick(self, event):
-        if self.play:
-            run = self.MinMax()
-            if not run: self.play = False
-            self.draw_board()
+        #if self.play:
+        #    self.checkResult(self.MinMax())
+        #    #if not ret: self.play = False
+        #    self.draw_board()
+        pass
 
+    def onKeyUp(self, event):
+        if self.play:
+            self.checkResult(self.MinMax())
+            #if not ret: self.play = False
+            self.draw_board()
+        pass
 
 if __name__ == "__main__":
-    g = Connect(b_row=7, b_col=7, size=80)
+    g = Connect(b_row=5, b_col=5, size=80)
     g.starGame()
     
