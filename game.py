@@ -9,6 +9,8 @@ class Game:
         self.SIZE = size
         self.__run = False
         self.window_name = window_name
+        self.TICK_EVENT = pygame.USEREVENT + 1
+        self.TICK_TIME = 250
 
     def init_pygame(self):
         pygame.init()
@@ -20,9 +22,10 @@ class Game:
 
     def __initNewGame(self):
         self.__run = True
+        pygame.time.set_timer(self.TICK_EVENT, self.TICK_TIME)
 
-    def __endGame(self):
-        pass
+    def stopGame(self):
+        self.__run = False
         
     
     def starGame(self):
@@ -31,8 +34,6 @@ class Game:
         while self.__run == True:
             for event in pygame.event.get():
                 self.handleEvent(event)
-            
-            
 
         pygame.quit()
 
@@ -41,18 +42,21 @@ class Game:
         pygame.display.update()
     
 
-
     def handleEvent(self, event):
-        if event.type == pygame.QUIT:
+        if event.type == self.TICK_EVENT:
+            self.onTick(event)
+        elif event.type == pygame.QUIT:
             self.onQuit(event)
         else:
             self.onOther(event)
             
     ###game events
+    def onTick(self, event):
+        pass
     
     def onQuit(self, event):
         print("onQuit")
-        self.__run = False
+        self.stopGame()
         
     def onOther(self, event:Event):
         e_name = pygame.event.event_name(event.type)

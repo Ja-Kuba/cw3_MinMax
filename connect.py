@@ -20,17 +20,12 @@ class Connect(ConnectLogic, Game):
         super().__init__(b_row, b_col, **kwarg)
         super(ConnectLogic, self).__init__(size=(b_col*size, b_row*size), 
                                            window_name="connect4", **kwarg) 
-        self.init_pygame()
         self.DISC_SIZE = size
+        self.init_pygame()
         self.draw_board()
+        self.play = True
         
-        #testing
-        print(self.game_board.getBoard()) 
-        self.setField(0,0, 1)
-        self.setField(5,6, 2)
-        self.setField(6,6, 1)
-        print(self.game_board.getBoard()) 
-        self.draw_board()
+        
 
     def draw_board(self):
         for c in range(self.COLUMNS_CNT):
@@ -81,9 +76,15 @@ class Connect(ConnectLogic, Game):
     def draw(self):
         super().draw()
         
-        
+          
+    def onTick(self, event):
+        if self.play:
+            run = self.MinMax()
+            if not run: self.play = False
+            self.draw_board()
 
 
 if __name__ == "__main__":
     g = Connect(b_row=7, b_col=7, size=80)
     g.starGame()
+    
