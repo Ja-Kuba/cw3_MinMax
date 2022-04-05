@@ -39,13 +39,13 @@ class ConnectLogic():
         
 
     def makeMove(self, r, c):
-        ret= self.makeMove_inner(r, c, self.game_board)
+        ret= self.makeMove_inner(r, c, self.game_board, self.currentPlayer)
         if ret == self.NORMAL_MOVE: 
             self.switchPlayer()
         return ret
 
-    def makeMove_inner(self, r, c, board):
-        self.setField(r, c, self.currentPlayer, board)      
+    def makeMove_inner(self, r, c, board, player):
+        self.setField(r, c, player, board)      
         if self.isWinningMove(r, c, board): 
             return self.WINNER_MOVE
         elif not board.anyMovesLeft():
@@ -151,7 +151,7 @@ class ConnectLogic():
     # return (score:int, move|None)
     #return m_max, m_min
     def findNextMove_minmax(self, depth, move, board, player, root):
-        m_res = self.makeMove_inner(move[0], move[1], board)
+        m_res = self.makeMove_inner(move[0], move[1], board, player)
         s =(self.scoreMove(move[0], move[1], board, m_res, player), move)
         self.NODE_NUM+=1
         ch = Node(f"{s}_{depth}_{self.NODE_NUM}", parent=root)
@@ -202,6 +202,12 @@ class ConnectLogic():
 
     def scoreMove_series(self, max_score, min_score, board, row, col, r_dir, c_dir):
         max_tmp, min_tmp = board.findLongestSeries(row, col, r_dir, c_dir)
-        max_score +=sum(max_tmp)
-        min_score +=sum(min_tmp)
+        max_score +=sum(self.multipier(max_tmp))
+        min_score +=sum(self.multipier(min_tmp))
         return (max_score, min_score)
+
+
+    def multipier(self, vec):
+        for v in vec:
+            if abs(v)==3: v=6
+        return vec
