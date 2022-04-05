@@ -16,6 +16,7 @@ class Game:
         pygame.init()
         self.game_screen = pygame.display.set_mode(self.SIZE)
         pygame.display.set_caption(self.window_name)
+        self.font = pygame.font.Font(pygame.font.get_default_font(), 16)
     
     def getScreen(self):
         return self.game_screen

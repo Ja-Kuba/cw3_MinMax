@@ -8,6 +8,7 @@ BLACK_COLOR = (0,0,0)
 RED_COLOR = (194, 21, 21)
 YELLOW_COLOR = (242, 205, 19)
 EMPTY_COLOR = (33, 33, 33)
+TEXT_COLOR = (32, 112, 8)
 
 
 class Connect(ConnectLogic, Game):
@@ -16,9 +17,10 @@ class Connect(ConnectLogic, Game):
     b_row - board rows count
     b_col - board columns count
     '''
+    TEXT_FIELD_SIZE = 30
     def __init__(self,b_row:int=6, b_col:int=7, size:int = 100, **kwarg) -> None:
         super().__init__(b_row, b_col, **kwarg)
-        super(ConnectLogic, self).__init__(size=(b_col*size, b_row*size), 
+        super(ConnectLogic, self).__init__(size=(b_col*size, self.TEXT_FIELD_SIZE+b_row*size ), 
                                            window_name="connect4", **kwarg) 
         self.DISC_SIZE = size
         self.init_pygame()
@@ -28,16 +30,23 @@ class Connect(ConnectLogic, Game):
         
 
     def draw_board(self):
+        s = self.DISC_SIZE
         for c in range(self.COLUMNS_CNT):
             for r in range(self.ROWS_CNT):
                 f_color = self.getFieldColor(r, c)
                 x = c*self.DISC_SIZE
-                y = r*self.DISC_SIZE
-                s = self.DISC_SIZE
+                y = r*self.DISC_SIZE + self.TEXT_FIELD_SIZE
                 self.drawField(x, y, s, f_color)
         self.draw()
 
-
+    def drawTextField(self):
+        pygame.draw.rect(
+            self.getScreen(),
+            EMPTY_COLOR,  
+            (0, 0, self.COLUMNS_CNT*self.DISC_SIZE, self.TEXT_FIELD_SIZE),                    
+        )
+        self.draw()
+    
     def drawField(self, x, y, s, color):
                 pygame.draw.rect(
                     self.getScreen(),
@@ -63,6 +72,14 @@ class Connect(ConnectLogic, Game):
                     int(s/2 - 12)
                 )
         
+    def draw_msg(self, msg):
+        self.drawTextField()
+        text_surface = self.font.render(msg, False, TEXT_COLOR)
+        self.game_screen.blit(text_surface, dest=(10,10))
+
+        
+    def draw(self):
+        super().draw()
         
 
     def getFieldColor(self, row, col):
@@ -80,17 +97,17 @@ class Connect(ConnectLogic, Game):
         else: return "RED"
 
 
-    def draw(self):
-        super().draw()
 
     def checkResult(self, m_type):
         if m_type == self.WINNER_MOVE:
             self.play = False
-            print(f"winner: {self.getCurrentPlayer_name()}")
+            msg = f"winner: {self.getCurrentPlayer_name()}!!!!"
         elif m_type == self.DRAW_MOVE:
             self.play = False
-            print("game draw")
-        else: pass
+            msg = "game draw :("
+        else: 
+            msg =f"next move: {self.getCurrentPlayer_name()}"
+        self.draw_msg(msg)
 
           
     def onTick(self, event):
