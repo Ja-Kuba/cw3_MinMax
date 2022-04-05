@@ -1,8 +1,13 @@
+from platform import node
 from numpy import true_divide
 from connect_error import ConnectError
 from board import Board
 from random import randrange
 from operator import itemgetter
+from anytree import Node, RenderTree
+from anytree.exporter import DotExporter
+from graphviz import Source, render
+
 
 class ConnectLogic():
     PLAYER_Y = 1
@@ -10,6 +15,7 @@ class ConnectLogic():
     WINNER_MOVE=2 
     DRAW_MOVE=1
     NORMAL_MOVE=0 
+    NODE_NUM=0
     
     def __init__(self, b_row, b_col, **kwarg) -> None:
         print("ConnectLogic init")
@@ -90,23 +96,33 @@ class ConnectLogic():
     def MinMax(self):
         valid_moves = self.game_board.getAllValidMoves()
         moves = []
+        self.NODE_NUM = 0
+        root = Node("root")
         for move in valid_moves:
             m_ret = self.findNextMove_minmax(
                 depth=self.MINMAX_DEPTH,
                 move=move,
                 board=self.game_board.copy(),
                 player=self.currentPlayer,
+                root=root
                 )
-            moves.append((m_ret[0], move))
+            moves.append((m_ret[0], move, m_ret[1]))
                 
         max_move = max(moves ,key=itemgetter(0))
         min_move = min(moves ,key=itemgetter(0))
         m = min_move if self.currentPlayer == self.MIN_Player else max_move
-        print("------------")
-        print(moves)
-        print(f"max_move: {max_move}")
-        print(f"min_move: {min_move}")
+        #print("------------")
+        #print(moves)
+        #print(f"max_move: {max_move}")
+        #print(f"min_move: {min_move}")
+        #for pre, fill, node in RenderTree(root):
+        #    print("%s%s" % (pre, node.name))
+        DotExporter(root).to_dotfile("root.dot")
+        Source.from_file('root.dot')
+        render('dot', 'png', 'root.dot')     
+        
         print(f"move: {m}")
+            
         if m:
             ret = self.makeMove(m[1][0], m[1][1])    
             return ret
@@ -134,41 +150,44 @@ class ConnectLogic():
     '''
     # return (score:int, move|None)
     #return m_max, m_min
-    def findNextMove_minmax(self, depth, move, board, player, tree=None):
+    def findNextMove_minmax(self, depth, move, board, player, root):
         m_res = self.makeMove_inner(move[0], move[1], board)
+        s =(self.scoreMove(move[0], move[1], board, m_res, player), move)
+        self.NODE_NUM+=1
+        ch = Node(f"{s}_{depth}_{self.NODE_NUM}", parent=root)
         if m_res != self.NORMAL_MOVE or depth == 0:
-            print(f"return winner: {depth}")
-            return (self.scoreMove(move[0], move[1], board, m_res, player), move)
-        
+            #ret = (self.scoreMove(move[0], move[1], board, m_res, player), move) 
+            ret = s
+
         else:
             moves = board.getAllValidMoves()
             scores = []
-            for m in moves:
+            for i, m in enumerate(moves):
                 m_res = self.findNextMove_minmax(
                     depth=depth-1,
                     move=m,
                     board=board.copy(),
                     player=self.switch_player(player),
+                    root=ch,
                 )
-                s =(self.scoreMove(m[0], m[1], board, m_res, player), m)
-                scores.append(s)
+                scores.append(m_res)
 
-            print(scores)
             max_move = max(scores ,key=itemgetter(0))
             min_move = min(scores ,key=itemgetter(0))
 
             ret = min_move if player == self.MIN_Player else max_move
-            return ret
+        
+        
+        return ret
     
     
     
     def scoreMove(self, row, col, board, m_res, player):
         ret = 0
+        k = -1 if player == self.MIN_Player else 1
         if m_res == self.WINNER_MOVE:
-            print(f"winner!")
-            ret=1000
+            ret=k*1000
         elif m_res == self.DRAW_MOVE:
-            print(f"draw!")
             ret = 0
         else:
             max_score=0 
@@ -179,8 +198,7 @@ class ConnectLogic():
             max_score, min_score = self.scoreMove_series(max_score, min_score, board, row, col, 1, 0)
             ret = max_score - min_score
         
-        k = -1 if player == self.MIN_Player else 1
-        return k * ret
+        return ret
 
     def scoreMove_series(self, max_score, min_score, board, row, col, r_dir, c_dir):
         max_tmp, min_tmp = board.findLongestSeries(row, col, r_dir, c_dir)

@@ -94,6 +94,7 @@ class Connect(ConnectLogic, Game):
 
           
     def onTick(self, event):
+        #self.onKeyUp(event)
         #if self.play:
         #    self.checkResult(self.MinMax())
         #    #if not ret: self.play = False
@@ -108,6 +109,6 @@ class Connect(ConnectLogic, Game):
         pass
 
 if __name__ == "__main__":
-    g = Connect(b_row=5, b_col=5, size=80)
+    g = Connect(b_row=6, b_col=5, size=80, minmax_depth=1)
     g.starGame()
     
