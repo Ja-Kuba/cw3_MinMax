@@ -2,6 +2,8 @@ from re import S
 from game import *
 from connect_logic import ConnectLogic, Board
 from connect_error import ConnectError
+import sys
+from time import perf_counter
 
 BLUE_COLOR = (0, 127, 166)
 BLACK_COLOR = (0,0,0)
@@ -18,7 +20,7 @@ class Connect(ConnectLogic, Game):
     b_col - board columns count
     '''
     TEXT_FIELD_SIZE = 30
-    def __init__(self,b_row:int=6, b_col:int=7, size:int = 100, **kwarg) -> None:
+    def __init__(self,b_row:int=6, b_col:int=7, size:int = 100, play_on_tick= False, **kwarg) -> None:
         super().__init__(b_row, b_col, **kwarg)
         super(ConnectLogic, self).__init__(size=(b_col*size, self.TEXT_FIELD_SIZE+b_row*size ), 
                                            window_name="connect4", **kwarg) 
@@ -26,7 +28,7 @@ class Connect(ConnectLogic, Game):
         self.init_pygame()
         self.draw_board()
         self.play = True
-        
+        self.play_on_tick = play_on_tick
         
 
     def draw_board(self):
@@ -111,21 +113,26 @@ class Connect(ConnectLogic, Game):
 
           
     def onTick(self, event):
-        #self.onKeyUp(event)
-        #if self.play:
-        #    self.checkResult(self.MinMax())
-        #    #if not ret: self.play = False
-        #    self.draw_board()
-        pass
+        if self.play_on_tick:
+            self.onKeyUp(event)
 
     def onKeyUp(self, event):
         if self.play:
+            t = perf_counter()
             self.checkResult(self.MinMax())
             #if not ret: self.play = False
+            print(f"move time: {perf_counter()-t}")
             self.draw_board()
         pass
 
 if __name__ == "__main__":
-    g = Connect(b_row=6, b_col=5, size=80, minmax_depth=1)
-    g.starGame()
+    args = sys.argv
+    if not len(args) == 4:
+        print("invalid args: connect.py b_row b_col depth")
+    else:
+        b_row = int(args[1] )
+        b_col = int(args[2])
+        minmax_depth = int(args[3])
+        g = Connect(b_row=b_row, b_col=b_col, size=80,play_on_tick=True ,minmax_depth=minmax_depth)
+        g.starGame()
     

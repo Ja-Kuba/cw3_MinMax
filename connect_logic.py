@@ -114,10 +114,12 @@ class ConnectLogic():
         m=self.pickFinalMOve_minmax(moves)
         
         ##print tree
-        root.name += f"\n{m}"
-        DotExporter(root).to_dotfile("root.dot")
-        Source.from_file('root.dot')
-        render('dot', 'png', 'root.dot')     
+        if self.NODE_NUM < 20:
+            root.name += f"\n{m}"
+            DotExporter(root).to_dotfile("root.dot")
+            Source.from_file('root.dot')
+            render('dot', 'png', 'root.dot')
+            print("tree rendered")     
         ##
         
         if m:
@@ -127,8 +129,6 @@ class ConnectLogic():
             raise ConnectError("invalid game status no moves found")
     
     def pickFinalMOve_minmax(self, moves):
-        #max_move = max(moves ,key=itemgetter(0))
-        #min_move = min(moves ,key=itemgetter(0))
         moves_s = sorted(moves,key=itemgetter(0))
         max_move = moves_s[-1]
         min_move = moves_s[0]
@@ -165,7 +165,7 @@ class ConnectLogic():
         s =(self.scoreMove(move[0], move[1], board, m_res, player), move)
         
         self.NODE_NUM+=1
-        ch = Node(f"{s}_{depth}_{self.NODE_NUM}", parent=root)
+        ch = Node(f"{self.NODE_NUM}. D: {depth} {s}", parent=root)
 
         if m_res != self.NORMAL_MOVE or depth == 0:
             ret = s
