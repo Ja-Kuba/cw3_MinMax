@@ -27,7 +27,10 @@ class ConnectLogic():
     
     def getCurrentPlayer(self):
         return self.currentPlayer
-
+    
+    def playerToStr(self, p):
+        if p == self.PLAYER_Y: return "YELLOW MAX"
+        else: return "RED MIN"
 
     def switchPlayer(self):
         self.currentPlayer = self.switch_player(self.currentPlayer)
@@ -97,7 +100,7 @@ class ConnectLogic():
         valid_moves = self.game_board.getAllValidMoves()
         moves = []
         self.NODE_NUM = 0
-        root = Node("root")
+        root = Node(f"{self.playerToStr(self.currentPlayer)}")
         for move in valid_moves:
             m_ret = self.findNextMove_minmax(
                 depth=self.MINMAX_DEPTH,
@@ -106,22 +109,16 @@ class ConnectLogic():
                 player=self.currentPlayer,
                 root=root
                 )
-            moves.append((m_ret[0], move, m_ret[1]))
+            moves.append((m_ret[0], move))
                 
         max_move = max(moves ,key=itemgetter(0))
         min_move = min(moves ,key=itemgetter(0))
         m = min_move if self.currentPlayer == self.MIN_Player else max_move
-        #print("------------")
-        #print(moves)
-        #print(f"max_move: {max_move}")
-        #print(f"min_move: {min_move}")
-        #for pre, fill, node in RenderTree(root):
-        #    print("%s%s" % (pre, node.name))
+        root.name += f"\n{m}"
+
         DotExporter(root).to_dotfile("root.dot")
         Source.from_file('root.dot')
         render('dot', 'png', 'root.dot')     
-        
-        print(f"move: {m}")
             
         if m:
             ret = self.makeMove(m[1][0], m[1][1])    
@@ -172,12 +169,13 @@ class ConnectLogic():
                 )
                 scores.append(m_res)
 
+
             max_move = max(scores ,key=itemgetter(0))
             min_move = min(scores ,key=itemgetter(0))
-
-            ret = min_move if player == self.MIN_Player else max_move
+            #ret = min_move if player == self.MIN_Player else max_move
+            ret = min_move if player == self.MAX_Player else max_move
         
-        
+        ch.name+=f" -> {ret[0]}"
         return ret
     
     
