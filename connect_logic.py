@@ -1,8 +1,8 @@
 from platform import node
-from numpy import true_divide
+import numpy as np
 from connect_error import ConnectError
 from board import Board
-from random import randrange
+from random import choice
 from operator import itemgetter
 from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
@@ -101,6 +101,7 @@ class ConnectLogic():
         moves = []
         self.NODE_NUM = 0
         root = Node(f"{self.playerToStr(self.currentPlayer)}")
+        
         for move in valid_moves:
             m_ret = self.findNextMove_minmax(
                 depth=self.MINMAX_DEPTH,
@@ -110,23 +111,35 @@ class ConnectLogic():
                 root=root
                 )
             moves.append((m_ret[0], move))
-                
-        max_move = max(moves ,key=itemgetter(0))
-        min_move = min(moves ,key=itemgetter(0))
-        m = min_move if self.currentPlayer == self.MIN_Player else max_move
+        m=self.pickFinalMOve_minmax(moves)
+        
+        ##print tree
         root.name += f"\n{m}"
-
         DotExporter(root).to_dotfile("root.dot")
         Source.from_file('root.dot')
         render('dot', 'png', 'root.dot')     
-            
+        ##
+        
         if m:
             ret = self.makeMove(m[1][0], m[1][1])    
             return ret
         else: 
             raise ConnectError("invalid game status no moves found")
-        #m = randrange(len(moves))
     
+    def pickFinalMOve_minmax(self, moves):
+        #max_move = max(moves ,key=itemgetter(0))
+        #min_move = min(moves ,key=itemgetter(0))
+        moves_s = sorted(moves,key=itemgetter(0))
+        max_move = moves_s[-1]
+        min_move = moves_s[0]
+        m_score = min_move[0] if self.currentPlayer == self.MIN_Player else max_move[0]
+        tmp = []
+        for m in moves:
+            if m[0] == m_score: 
+                tmp.append(m)
+
+        m = choice(tmp)
+        return m
     
     
     '''
@@ -150,10 +163,11 @@ class ConnectLogic():
     def findNextMove_minmax(self, depth, move, board, player, root):
         m_res = self.makeMove_inner(move[0], move[1], board, player)
         s =(self.scoreMove(move[0], move[1], board, m_res, player), move)
+        
         self.NODE_NUM+=1
         ch = Node(f"{s}_{depth}_{self.NODE_NUM}", parent=root)
+
         if m_res != self.NORMAL_MOVE or depth == 0:
-            #ret = (self.scoreMove(move[0], move[1], board, m_res, player), move) 
             ret = s
 
         else:
@@ -169,10 +183,8 @@ class ConnectLogic():
                 )
                 scores.append(m_res)
 
-
             max_move = max(scores ,key=itemgetter(0))
             min_move = min(scores ,key=itemgetter(0))
-            #ret = min_move if player == self.MIN_Player else max_move
             ret = min_move if player == self.MAX_Player else max_move
         
         ch.name+=f" -> {ret[0]}"
@@ -209,3 +221,6 @@ class ConnectLogic():
         for v in vec:
             if abs(v)==3: v=6
         return vec
+
+if __name__ == "__main__":
+    pass
