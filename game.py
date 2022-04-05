@@ -10,7 +10,7 @@ class Game:
         self.__run = False
         self.window_name = window_name
         self.TICK_EVENT = pygame.USEREVENT + 1
-        self.TICK_TIME = 150
+        self.TICK_TIME = 500
 
     def init_pygame(self):
         pygame.init()

@@ -4,6 +4,8 @@ from connect_logic import ConnectLogic, Board
 from connect_error import ConnectError
 import sys
 from time import perf_counter
+from anytree.exporter import DotExporter
+from graphviz import Source, render
 
 BLUE_COLOR = (0, 127, 166)
 BLACK_COLOR = (0,0,0)
@@ -29,6 +31,7 @@ class Connect(ConnectLogic, Game):
         self.draw_board()
         self.play = True
         self.play_on_tick = play_on_tick
+        self.tree_history =[]
         
 
     def draw_board(self):
@@ -98,7 +101,19 @@ class Connect(ConnectLogic, Game):
         if p == self.PLAYER_Y: return "YELLOW"
         else: return "RED"
 
+    def saveHistory(self):
+        print("save history")
+        if len(self.tree_history) > 2:
+            self.saveTree(self.tree_history[-1],1)
+            self.saveTree(self.tree_history[-2],2)
 
+    def saveTree(self, root, ind):
+        DotExporter(root).to_dotfile(f"root_{ind}.dot")
+        Source.from_file(f"root_{ind}.dot")
+        render('dot', 'png', f"root_{ind}.dot")
+        print("tree rendered") 
+
+    
 
     def checkResult(self, m_type):
         if m_type == self.WINNER_MOVE:
@@ -111,18 +126,28 @@ class Connect(ConnectLogic, Game):
             msg =f"next move: {self.getCurrentPlayer_name()}"
         self.draw_msg(msg)
 
+
+    def play_minmax(self):
+        if self.play:
+            t = perf_counter()
+            self.checkResult(self.MinMax(self.tree_history))
+            print(f"move time: {perf_counter()-t}")
+            self.draw_board()
+        
+
           
     def onTick(self, event):
         if self.play_on_tick:
-            self.onKeyUp(event)
+            self.play_minmax()
 
     def onKeyUp(self, event):
-        if self.play:
-            t = perf_counter()
-            self.checkResult(self.MinMax())
-            #if not ret: self.play = False
-            print(f"move time: {perf_counter()-t}")
-            self.draw_board()
+        if event.key == pygame.K_RETURN:
+            self.play_minmax()
+        elif event.key == pygame.K_SPACE:
+            self.saveHistory()
+        elif event.key == pygame.K_p:
+            print("pause")
+            self.play_on_tick = not self.play_on_tick
         pass
 
 if __name__ == "__main__":
@@ -133,6 +158,6 @@ if __name__ == "__main__":
         b_row = int(args[1] )
         b_col = int(args[2])
         minmax_depth = int(args[3])
-        g = Connect(b_row=b_row, b_col=b_col, size=80,play_on_tick=True ,minmax_depth=minmax_depth)
+        g = Connect(b_row=b_row, b_col=b_col, size=80,play_on_tick=False ,minmax_depth=minmax_depth)
         g.starGame()
     

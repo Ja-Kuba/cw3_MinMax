@@ -96,7 +96,7 @@ class ConnectLogic():
         self.MIN_Player = self.PLAYER_R
         self.MINMAX_DEPTH = minmax_depth
     
-    def MinMax(self):
+    def MinMax(self, trees):
         valid_moves = self.game_board.getAllValidMoves()
         moves = []
         self.NODE_NUM = 0
@@ -111,16 +111,10 @@ class ConnectLogic():
                 root=root
                 )
             moves.append((m_ret[0], move))
+            
         m=self.pickFinalMOve_minmax(moves)
-        
-        ##print tree
-        if self.NODE_NUM < 20:
-            root.name += f"\n{m}"
-            DotExporter(root).to_dotfile("root.dot")
-            Source.from_file('root.dot')
-            render('dot', 'png', 'root.dot')
-            print("tree rendered")     
-        ##
+        root.name += f"\n{m}"
+        trees.append(root)
         
         if m:
             ret = self.makeMove(m[1][0], m[1][1])    
@@ -162,7 +156,7 @@ class ConnectLogic():
     #return m_max, m_min
     def findNextMove_minmax(self, depth, move, board, player, root):
         m_res = self.makeMove_inner(move[0], move[1], board, player)
-        s =(self.scoreMove(move[0], move[1], board, m_res, player), move)
+        s = (self.scoreMove(move[0], move[1], board, m_res, player, depth), move)
         
         self.NODE_NUM+=1
         ch = Node(f"{self.NODE_NUM}. D: {depth} {s}", parent=root)
@@ -192,11 +186,11 @@ class ConnectLogic():
     
     
     
-    def scoreMove(self, row, col, board, m_res, player):
+    def scoreMove(self, row, col, board, m_res, player, depth):
         ret = 0
         k = -1 if player == self.MIN_Player else 1
         if m_res == self.WINNER_MOVE:
-            ret=k*1000
+            ret=k*1000 * (depth +1)
         elif m_res == self.DRAW_MOVE:
             ret = 0
         else:
